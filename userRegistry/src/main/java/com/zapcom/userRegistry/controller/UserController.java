@@ -15,21 +15,26 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.zapcom.common.model.User;
+import com.zapcom.userRegistry.Repository.UserRepository;
 import com.zapcom.userRegistry.exceptions.usernotfoundexception;
 import com.zapcom.userRegistry.service.Userservice;
 
 @RestController
+@RequestMapping("userregistry")
 public class UserController {
 
 	Logger log=LoggerFactory.getLogger(UserController.class);
 
 	@Autowired
 	public Userservice userservice;
+	
+
 
 	@PostMapping("/user")
 	public ResponseEntity<User> CreateUser(@RequestBody User user){
@@ -39,6 +44,7 @@ public class UserController {
 
 	@GetMapping("/user/{id}")
 	public ResponseEntity<User> getUser(@PathVariable int id){
+
 		return new ResponseEntity<>(userservice.getUser(id).orElse(null),HttpStatus.OK);
 
 	}

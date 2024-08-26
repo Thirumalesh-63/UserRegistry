@@ -9,4 +9,6 @@ import com.zapcom.common.model.User;
 @Repository
 public interface UserRepository extends MongoRepository<User, Integer> {
 
+	
+	User findByName(String name);
 }
