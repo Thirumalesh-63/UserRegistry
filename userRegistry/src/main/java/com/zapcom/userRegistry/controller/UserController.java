@@ -48,7 +48,7 @@ public class UserController {
 		return new ResponseEntity<>(userservice.getUser(id).orElse(null),HttpStatus.OK);
 
 	}
-	@GetMapping("/users")
+	@GetMapping("/admin/users")
 	public ResponseEntity<List<User>> getAllUsers(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 		Page<User> users = userservice.getAllUsers(page,size);
