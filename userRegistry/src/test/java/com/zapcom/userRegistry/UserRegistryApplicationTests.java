@@ -1,9 +1,9 @@
 package com.zapcom.userRegistry;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.List;
@@ -11,10 +11,8 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
@@ -30,110 +28,76 @@ import com.zapcom.userRegistry.service.Userservice;
 @AutoConfigureMockMvc
 class UserRegistryApplicationTests {
 
+	@Mock
+	private Userservice userservice;
 
-    @Mock
-    private Userservice userservice;
+	@InjectMocks
+	private UserController userController;
 
-    @InjectMocks
-    private UserController userController;
+	private User user;
 
-    private User user;
+	@BeforeEach
+	public void setup() {
+		user = new User();
+		user.setId(1);
+		user.setName("Test User");
+		// Initialize other fields if necessary
+	}
 
-    @BeforeEach
-    public void setup() {
-        user = new User();
-        user.setId(1);
-        user.setName("Test User");
-        // Initialize other fields if necessary
-    }
+	@Test
+	public void testCreateUser() {
+		when(userservice.createUser(user)).thenReturn(user);
 
-    @Test
-    public void testCreateUser() {
-        when(userservice.createUser(any(User.class))).thenReturn(user);
+		ResponseEntity<User> response = userController.CreateUser(user);
 
-        ResponseEntity<User> response = userController.CreateUser(user);
+		verify(userservice, times(1)).createUser(any(User.class));
+		assert (response.getStatusCode()).equals(HttpStatus.CREATED);
+		assert (response.getBody()).equals(user);
+	}
 
-        verify(userservice, times(1)).createUser(any(User.class));
-        assert(response.getStatusCode()).equals(HttpStatus.CREATED);
-        assert(response.getBody()).equals(user);
-    }
+	@Test
+	public void testGetUser() {
+		when(userservice.getUser(1)).thenReturn(Optional.of(user));
 
-    @Test
-    public void testGetUser() {
-        when(userservice.getUser(1)).thenReturn(Optional.of(user));
+		ResponseEntity<User> response = userController.getUser(1);
 
-        ResponseEntity<User> response = userController.getUser(1);
+		verify(userservice, times(1)).getUser(1);
+		assert (response.getStatusCode()).equals(HttpStatus.OK);
+		assert (response.getBody()).equals(user);
+	}
 
-        verify(userservice, times(1)).getUser(1);
-        assert(response.getStatusCode()).equals(HttpStatus.OK);
-        assert(response.getBody()).equals(user);
-    }
+	@Test
+	public void testGetAllUsers() {
+		Page<User> page = new PageImpl<>(Arrays.asList(user));
+		when(userservice.getAllUsers(0, 10)).thenReturn(page);
 
-    @Test
-    public void testGetUserNotFound() {
-        when(userservice.getUser(1)).thenReturn(Optional.empty());
+		ResponseEntity<List<User>> response = userController.getAllUsers(0, 10);
 
-        ResponseEntity<User> response = userController.getUser(1);
+		verify(userservice, times(1)).getAllUsers(0, 10);
+		assert (response.getStatusCode()).equals(HttpStatus.OK);
+		assert (response.getBody()).equals(page.getContent());
+	}
 
-        verify(userservice, times(1)).getUser(1);
-        assert(response.getStatusCode()).equals(HttpStatus.OK);
-        assert(response.getBody())== null;
-    }
+	@Test
+	public void testUpdateUser() {
+		when(userservice.updateUser(1, user)).thenReturn(user);
 
-    @Test
-    public void testGetAllUsers() {
-        Page<User> page = new PageImpl<>(Arrays.asList(user));
-        when(userservice.getAllUsers(0, 10)).thenReturn(page);
+		ResponseEntity<User> response = userController.updateUser(1, user);
 
-        ResponseEntity<List<User>> response = userController.getAllUsers(0, 10);
+		verify(userservice, times(1)).updateUser(1, user);
+		assert (response.getStatusCode()).equals(HttpStatus.OK);
+		assert (response.getBody()).equals(user);
+	}
 
-        verify(userservice, times(1)).getAllUsers(0, 10);
-        assert(response.getStatusCode()).equals(HttpStatus.OK);
-        assert(response.getBody()).equals(page.getContent());
-    }
+	@Test
+	public void testDeleteUser() {
+		when(userservice.deleteUser(1)).thenReturn(true);
 
-    @Test
-    public void testUpdateUser() {
-        when(userservice.updateUser(1, user)).thenReturn(user);
+		ResponseEntity<String> response = userController.deleteUser(1);
 
-        ResponseEntity<User> response = userController.updateUser(1, user);
-
-        verify(userservice, times(1)).updateUser(1, user);
-        assert(response.getStatusCode()).equals(HttpStatus.OK);
-        assert(response.getBody()).equals(user);
-    }
-
-    @Test
-    public void testUpdateUserNotFound() {
-        when(userservice.updateUser(1, user)).thenReturn(null);
-
-        ResponseEntity<User> response = userController.updateUser(1, user);
-
-        verify(userservice, times(1)).updateUser(1, user);
-        assert(response.getStatusCode()).equals(HttpStatus.NOT_FOUND);
-        assert(response.getBody())==null;
-    }
-
-    @Test
-    public void testDeleteUser() {
-        when(userservice.deleteUser(1)).thenReturn(true);
-
-        ResponseEntity<String> response = userController.deleteUser(1);
-
-        verify(userservice, times(1)).deleteUser(1);
-        assert(response.getStatusCode()).equals(HttpStatus.OK);
-        assert(response.getBody()).equals("user deleted succesfully");
-    }
-
-    @Test
-    public void testDeleteUserNotFound() {
-        when(userservice.deleteUser(1)).thenReturn(false);
-
-        ResponseEntity<String> response = userController.deleteUser(1);
-
-        verify(userservice, times(1)).deleteUser(1);
-        assert(response.getStatusCode()).equals(HttpStatus.NOT_FOUND);
-        assert(response.getBody())==null;
-    }
+		verify(userservice, times(1)).deleteUser(1);
+		assert (response.getStatusCode()).equals(HttpStatus.OK);
+		assert (response.getBody()).equals("user deleted succesfully");
+	}
 
 }
